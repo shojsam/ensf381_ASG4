@@ -1,41 +1,97 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import CourseCatalog from './CourseCatalog';
+import CourseItem from './CourseItem';
 import EnrollmentList from './EnrollmentList';
 
 const CoursesPage = () => {
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  // State to store courses fetched from the back end
+  const [courses, setCourses] = useState([]);
+  // State for enrollments persisted in localStorage
+  const [enrolledCourses, setEnrolledCourses] = useState(() => {
+    const saved = localStorage.getItem('enrollments');
+    return saved ? JSON.parse(saved) : [];
+  });
+  // State to handle any fetch errors
+  const [error, setError] = useState(null);
 
-  const handleEnroll = (course) => {
-    // For this example, assign a fixed credit hour value (e.g., 3)
-    const creditHours = 3;
-    const alreadyEnrolled = enrolledCourses.find(c => c.id === course.id);
-    if (!alreadyEnrolled) {
-      setEnrolledCourses([...enrolledCourses, { ...course, creditHours }]);
-    }
-  };
-
-  const handleDrop = (courseId) => {
-    const updated = enrolledCourses.filter(course => course.id !== courseId);
-    setEnrolledCourses(updated);
-  };
-
-  // Load enrollment data from localStorage on mount
+  // Fetch courses from your Flask back end
   useEffect(() => {
-    const savedCourses = JSON.parse(localStorage.getItem('enrolledCourses'));
-    if (savedCourses) {
-      setEnrolledCourses(savedCourses);
-    }
+    fetch('http://localhost:5000/courses')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok.');
+        }
+        return response.json();
+      })
+      .then(data => setCourses(data))
+      .catch(err => {
+        setError('Error fetching courses.');
+        console.error(err);
+      });
   }, []);
 
+  // Persist enrollments in localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('enrollments', JSON.stringify(enrolledCourses));
+  }, [enrolledCourses]);
+
+  // Handle course enrollment
+  const handleEnroll = (course) => {
+    setEnrolledCourses(prev => [
+      ...prev, 
+      { 
+        ...course,
+        enrollmentId: Date.now() // Unique ID for each enrollment
+      }
+    ]);
+  };
+
+  // Handle removal of an enrollment
+  const handleRemove = (enrollmentId) => {
+    setEnrolledCourses(prev => 
+      prev.filter(course => course.enrollmentId !== enrollmentId)
+    );
+  };
+
   return (
-    <div className="courses-page">
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column' 
+    }}>
       <Header />
-      <div className="content">
-        <CourseCatalog onEnroll={handleEnroll} />
-        <EnrollmentList enrolledCourses={enrolledCourses} onDrop={handleDrop} />
+      
+      <div style={{ 
+        flex: 1,
+        display: 'flex',
+        padding: '20px',
+        gap: '30px'
+      }}>
+        <div style={{ flex: 3 }}>
+          <h2 style={{ color: '#004080' }}>Available Courses</h2>
+          {error && <div className="error">{error}</div>}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '20px'
+          }}>
+            {courses.map(course => (
+              <CourseItem 
+                key={course.id || course.course_id} 
+                course={course} 
+                onEnroll={handleEnroll}
+              />
+            ))}
+          </div>
+        </div>
+        
+        <EnrollmentList 
+          enrolledCourses={enrolledCourses}
+          onRemove={handleRemove}
+        />
       </div>
+
       <Footer />
     </div>
   );

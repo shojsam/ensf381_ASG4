@@ -1,0 +1,55 @@
+/* Container styling matching the login page theme */
+.regform-container {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  /* Form field styling */
+  .form-field {
+    margin-bottom: 15px;
+  }
+  
+  .form-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .form-field input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  
+  /* Error box styling */
+  .error-box {
+    background-color: #ffdddd;
+    border: 1px solid #ff5c5c;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    color: #d8000c;
+  }
+  
+  /* Signup button styling */
+  .signup-button {
+    background-color: #4CAF50;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px;
+    opacity: 0.5;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+  }
+  
+  .signup-button:hover {
+    background-color: #45A049;
+    opacity: 1.0;
+  }
+  
